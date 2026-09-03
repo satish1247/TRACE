@@ -4,6 +4,30 @@
 
 A working prototype for Innovation Unbound Round 2 (VIT Chennai), Problem Statement 1: protecting senior citizens and first-time digital users from social-engineering fraud. Every bank, NPCI, police and FIU rail in this prototype is simulated and labelled on screen. No real money, PINs or reports move.
 
+## Who builds what
+
+Three workstreams, one repo. Read [docs/SCHEMA.md](docs/SCHEMA.md) first: it is the contract that
+keeps the three from colliding, and it fixes the one money formula all of us share.
+
+| Module | Pillar | Owner | Branch | Brief | Owns |
+|---|---|---|---|---|---|
+| SHIELD | Prevention | Member 1 | `shield` | [PRD-1](docs/PRD-1-SHIELD.md) | `/shield` — writes `calls`, `detections` |
+| TRACK | Protection | Member 2 | `track` | [PRD-2](docs/PRD-2-TRACK.md) | `/pay`, `/dashboard` — writes `incidents`, `accounts` |
+| AGENT | Precaution | Member 3 | `agent` | [PRD-3](docs/PRD-3-AGENT.md) | `/agent` — writes `agentTasks` |
+
+Never write to a collection you do not own. Read anything.
+
+```bash
+git fetch origin
+git checkout shield          # or track / agent
+git config user.name "Your Name"
+git config user.email "your@email"
+```
+
+How the three join up: SHIELD writes a `calls` document, TRACK reads its `callId` to open an
+incident, AGENT reads `accounts` to know what the victim can still spend. Everything moves between
+screens over Firestore `onSnapshot`, so no module has to call another.
+
 ## Run it
 
 ```bash
