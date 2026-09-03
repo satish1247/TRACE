@@ -8,3 +8,4 @@ next-env.d.ts
 .DS_Store
 ml/data/
 .trace-state.json
+.claude
