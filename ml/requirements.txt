@@ -1,0 +1,6 @@
+pandas>=2.0
+numpy>=1.26
+scikit-learn>=1.4
+imbalanced-learn>=0.12
+xgboost>=2.0
+requests>=2.31

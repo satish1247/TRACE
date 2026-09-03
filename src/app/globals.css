@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #10161c;
+  --ink-soft: #33434b;
+  --muted: #5c6a70;
+  --hairline: #c6d0d3;
+  --ground: #e9edee;
+  --surface: #f7f9f9;
+  --surface-2: #dfe6e7;
+  --accent: #a9640f;
+  --accent-tint: #f2e3ce;
+  --safe: #1f6f63;
+  --safe-tint: #d8e7e3;
+  --critical: #a63a2e;
+  --crit-tint: #f0dad6;
+}
+
+.stage-dark {
+  --ink: #dfe7e9;
+  --ink-soft: #aebdc2;
+  --muted: #8798a0;
+  --hairline: #2b383e;
+  --ground: #0c1316;
+  --surface: #131d21;
+  --surface-2: #1b282d;
+  --accent: #e0a252;
+  --accent-tint: #33240f;
+  --safe: #59ad9c;
+  --safe-tint: #102623;
+  --critical: #de7c6c;
+  --crit-tint: #2e1512;
+}
+
+html,
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Tamil", "Noto Sans Devanagari", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.large-text {
+  font-size: 125%;
+}
+
+.mono {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tag {
+  font-family: ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.lamp {
+  transition: background-color 250ms ease, color 250ms ease, border-color 250ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
