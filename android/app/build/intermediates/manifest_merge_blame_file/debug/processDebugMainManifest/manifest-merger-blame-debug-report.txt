@@ -1,0 +1,130 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.trace.guard"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="26"
+9        android:targetSdkVersion="34" />
+10
+11    <!-- Hear the call. With the speakerphone on, the microphone picks up both people. -->
+12    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+12-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:5:5-71
+12-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:5:22-68
+13    <!-- Know when a call connects and ends. -->
+14    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+14-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:7:5-75
+14-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:7:22-72
+15    <!-- Turn on the speakerphone automatically. -->
+16    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+16-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:9:5-80
+16-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:9:22-77
+17    <!-- Warn over the call screen. -->
+18    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+18-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:11:5-78
+18-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:11:22-75
+19    <!-- Keep listening for the whole call. -->
+20    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+20-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:13:5-77
+20-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:13:22-74
+21    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+21-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:14:5-88
+21-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:14:22-85
+22    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+22-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:15:5-77
+22-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:15:22-74
+23    <!-- Stream the transcript to the TRACE web app for analysis. -->
+24    <uses-permission android:name="android.permission.INTERNET" />
+24-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:17:5-67
+24-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:17:22-64
+25    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+25-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:18:5-79
+25-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:18:22-76
+26    <!--
+27         Read recordings made by the phone's own voice recorder or dialer, which are system
+28         apps with the call-audio access a third-party app is not granted.
+29    -->
+30    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+30-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:21:5-75
+30-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:21:22-72
+31    <uses-permission
+31-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:22:5-24:38
+32        android:name="android.permission.READ_EXTERNAL_STORAGE"
+32-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:23:9-64
+33        android:maxSdkVersion="32" />
+33-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:24:9-35
+34
+35    <!-- The on-device speech recogniser lives in another app; declare that we query it. -->
+36    <queries>
+36-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:27:5-31:15
+37        <intent>
+37-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:28:9-30:18
+38            <action android:name="android.speech.RecognitionService" />
+38-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:29:13-72
+38-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:29:21-69
+39        </intent>
+40    </queries>
+41
+42    <application
+42-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:33:5-63:19
+43        android:allowBackup="true"
+43-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:34:9-35
+44        android:debuggable="true"
+45        android:extractNativeLibs="false"
+46        android:icon="@android:drawable/ic_lock_idle_lock"
+46-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:35:9-59
+47        android:label="TRACE Guard"
+47-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:36:9-36
+48        android:supportsRtl="true"
+48-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:37:9-35
+49        android:theme="@android:style/Theme.Material.NoActionBar"
+49-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:39:9-66
+50        android:usesCleartextTraffic="true" >
+50-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:38:9-44
+51        <activity
+51-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:41:9-49:20
+52            android:name="com.trace.guard.MainActivity"
+52-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:42:13-41
+53            android:exported="true"
+53-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:43:13-36
+54            android:label="TRACE Guard" >
+54-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:44:13-40
+55            <intent-filter>
+55-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:45:13-48:29
+56                <action android:name="android.intent.action.MAIN" />
+56-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:46:17-69
+56-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:46:25-66
+57
+58                <category android:name="android.intent.category.LAUNCHER" />
+58-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:47:17-77
+58-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:47:27-74
+59            </intent-filter>
+60        </activity>
+61
+62        <service
+62-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:51:9-54:58
+63            android:name="com.trace.guard.CallGuardService"
+63-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:52:13-45
+64            android:exported="false"
+64-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:53:13-37
+65            android:foregroundServiceType="microphone" />
+65-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:54:13-55
+66
+67        <receiver
+67-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:56:9-62:20
+68            android:name="com.trace.guard.CallReceiver"
+68-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:57:13-41
+69            android:exported="true" >
+69-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:58:13-36
+70            <intent-filter android:priority="1000" >
+70-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:59:13-61:29
+70-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:59:28-51
+71                <action android:name="android.intent.action.PHONE_STATE" />
+71-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:60:17-76
+71-->D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\AndroidManifest.xml:60:25-73
+72            </intent-filter>
+73        </receiver>
+74    </application>
+75
+76</manifest>

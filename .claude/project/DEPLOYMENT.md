@@ -18,6 +18,32 @@ Development mode (`npm run dev`) also works and hot-reloads, but `npm start` is 
    `netsh advfirewall firewall add rule name="TRACE 3000" dir=in action=allow protocol=TCP localport=3000`
 4. On the phones open `http://<laptop-ip>:3000/phone` and `/guardian`. The microphone needs Chrome and a secure origin, so use typed answers on the phones and the laptop's own Chrome for the microphone moment on `/stage`.
 
+## Teammates on other networks: the public tunnel
+
+```bash
+npm run tunnel
+```
+
+Prints a public HTTPS address and keeps it alive, reconnecting automatically. Share the printed
+`/stage` link with the team. HTTPS also unlocks the microphone on phones, which plain
+`http://<ip>:3000` blocks.
+
+Three things worth knowing before relying on it:
+
+- **On the same wifi, prefer the local address.** It is faster and does not depend on a tunnel provider.
+- **This campus DNS does not resolve the tunnel's domain.** A phone on campus wifi may fail to open
+  the link even though it works elsewhere. Fix: set the phone's DNS to 8.8.8.8, use mobile data, or
+  just use the local address.
+- **The free tunnel expires roughly hourly** and the address changes. The script reconnects and prints
+  the new one. For a stable address, a paid tunnel or a Firebase/Vercel deployment is the answer;
+  neither is needed for the demo.
+
+Why SSH over port 443 rather than cloudflared or ngrok: this network blocks outbound port 7844,
+which cloudflared requires. Port 443 gets through.
+
+**The tunnel exposes the presenter controls too.** Anyone with the link can press Reset. Share it with
+the team, not in a public channel, and stop it with Ctrl+C when you are done.
+
 ## Recovery
 
 The server restarts in seconds and starts empty. Presenter → Reset → the beat you were on. Nothing is persisted, by design.

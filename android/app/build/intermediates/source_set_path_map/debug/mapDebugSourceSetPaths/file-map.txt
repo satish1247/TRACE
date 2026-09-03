@@ -1,0 +1,7 @@
+com.trace.guard.app-pngs-0 D:\_Projects\INNOVATION UNBOUNDED\android\app\build\generated\res\pngs\debug
+com.trace.guard.app-resValues-1 D:\_Projects\INNOVATION UNBOUNDED\android\app\build\generated\res\resValues\debug
+com.trace.guard.app-packageDebugResources-2 D:\_Projects\INNOVATION UNBOUNDED\android\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.trace.guard.app-packageDebugResources-3 D:\_Projects\INNOVATION UNBOUNDED\android\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.trace.guard.app-debug-4 D:\_Projects\INNOVATION UNBOUNDED\android\app\build\intermediates\merged_res\debug\mergeDebugResources
+com.trace.guard.app-debug-5 D:\_Projects\INNOVATION UNBOUNDED\android\app\src\debug\res
+com.trace.guard.app-main-6 D:\_Projects\INNOVATION UNBOUNDED\android\app\src\main\res

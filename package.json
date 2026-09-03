@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "train:card": "python ml/train_paysim.py",
+    "tunnel": "node scripts/tunnel.mjs",
     "lint": "next lint"
   },
   "dependencies": {

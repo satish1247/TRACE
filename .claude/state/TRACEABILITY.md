@@ -32,3 +32,5 @@ audit failures, not notes.
 | REQ-024 | Scam Rehearsal: a consented drill runs a simulated scam call | should | FEAT-012 | 1 | 2 | TEST-005 | - |
 | REQ-025 | Un-isolate: during a flagged live call, one tap conferences  | should | FEAT-011 | 1 | 2 | TEST-002 | - |
 | REQ-026 | Campaign detection: the same script fingerprint across many  | should | FEAT-013 | 1 | 2 | TEST-003 | - |
+| REQ-027 | Real-time transport: the server pushes state changes to ever | must | FEAT-021 | 1 | 4 | TEST-022 | - |
+| REQ-028 | Durability: live state survives a server restart, via Firest | must | FEAT-022 | 1 | 4 | TEST-023 | - |

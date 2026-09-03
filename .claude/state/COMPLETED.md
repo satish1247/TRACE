@@ -22,3 +22,5 @@
 | FEAT-018 | Loan-app checkpoint | REQ-019 |
 | FEAT-019 | Guided booking agent | REQ-020 |
 | FEAT-020 | OpenRouter wording enhancer | REQ-010 |
+| FEAT-021 | Real-time push transport (SSE) | REQ-027 |
+| FEAT-022 | Durable state (Firestore or disk snapshot) | REQ-028 |

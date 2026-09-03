@@ -109,6 +109,10 @@ const PERMISSIONS: Record<string, Role[]> = {
   "agent.start": ["phone", "presenter"],
   "agent.next": ["phone", "stage", "presenter"],
   "interview.warm": ["phone", "presenter", "stage"],
+  // the Android app (TRACE Guard) streams a live call's transcript here
+  "phone.start": ["phone", "presenter"],
+  "phone.line": ["phone", "presenter"],
+  "phone.end": ["phone", "presenter"],
 };
 
 export function dispatch(action: Action, role: Role): State {
@@ -460,6 +464,49 @@ export function reduce(s: State, a: Action, now: number): State {
       const q = str(p, "q");
       const hit = VERIFIED_HELP.find((h) => h.match.test(q));
       return hit ? withEvent(s, "search.intercept", `Search "${q}" intercepted: verified ${hit.name} shown instead of results`, now) : s;
+    }
+
+    // ------------------------------------------------------------- live call from the Android app
+    case "phone.start": {
+      const caller = str(p, "caller") || "Unknown number";
+      const call = {
+        ...emptyCall(),
+        active: true,
+        scenario: null,
+        callerId: caller,
+        callerName: `${caller} · live call`,
+        isDrill: false,
+      };
+      return withEvent(
+        { ...s, call, payment: emptyPayment(), guardian: { ...s.guardian, joinedCall: false } },
+        "phone.call",
+        `Live call from ${caller}. TRACE Guard on the phone is listening and streaming the transcript.`,
+        now,
+      );
+    }
+
+    case "phone.line": {
+      const text = str(p, "text").trim();
+      if (!text) return s;
+      let next = s;
+      if (!next.call.active || next.call.scenario !== null) {
+        next = reduce(next, { type: "phone.start", payload: { caller: str(p, "caller") } }, now);
+      }
+      next = scoreLine(next, { speaker: "caller", text }, now, true);
+      // once the caller claims to be an authority, check whether any such call was attested
+      if (!next.call.attestationLine && next.call.markers.some((m) => m.kind === "authority")) {
+        const att = attestationLine(next.call.callerId, "police unit");
+        next = {
+          ...next,
+          call: { ...next.call, claimsAuthority: "police unit", attested: att.attested, attestationCode: att.code, attestationLine: att.line },
+        };
+      }
+      return next;
+    }
+
+    case "phone.end": {
+      if (!s.call.active) return s;
+      return withEvent({ ...s, call: { ...s.call, active: false, ended: "user_end" } }, "phone.end", "Live call ended.", now);
     }
 
     // ------------------------------------------------------------- card-fraud engine

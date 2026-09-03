@@ -22,6 +22,16 @@ Then open **http://localhost:3000**. Node 18+ (built on Node 22). No database, n
 
 Demo PINs: **4471** real, **9999** duress (safety) PIN.
 
+### Let the team in from anywhere
+
+```bash
+npm run tunnel
+```
+
+Prints a public HTTPS link and keeps it alive. HTTPS also unlocks the phone microphone, which a
+plain local address blocks. On the same wifi the local address is faster. See
+`.claude/project/DEPLOYMENT.md` for the DNS caveat on campus networks.
+
 ## The demo in five beats (about three minutes)
 
 1. **Ordinary payment.** Presenter → Beat 1. Phone: tap Kumar Stores, type 340, PIN 4471. Nothing fires. *(Say: we don't harass real users.)*

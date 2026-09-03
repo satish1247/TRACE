@@ -26,3 +26,5 @@ a bound test passes, and no regression is open against it.
 | FEAT-018 Loan-app checkpoint | COMPLETE | OK | OK | OK | OK | OK | n/a | n/a | OK | OK | OK | OK | OK | OK | OK | OK | OK |
 | FEAT-019 Guided booking agent | COMPLETE | OK | OK | OK | OK | OK | n/a | n/a | OK | OK | OK | OK | OK | OK | OK | OK | OK |
 | FEAT-020 OpenRouter wording enhancer | COMPLETE | n/a | OK | OK | OK | n/a | n/a | n/a | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| FEAT-021 Real-time push transport (SSE) | COMPLETE | OK | OK | OK | OK | OK | n/a | n/a | OK | OK | OK | OK | OK | OK | OK | OK | OK |
+| FEAT-022 Durable state (Firestore or disk snapshot) | COMPLETE | OK | OK | OK | OK | OK | n/a | n/a | OK | OK | OK | OK | OK | OK | OK | OK | OK |
