@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { usePoll } from "@/lib/client";
 import { kindsPresent, MARKER_LABEL } from "@/lib/screening";
 import type { MarkerKind } from "@/lib/types";
@@ -14,6 +15,16 @@ const ORDER: MarkerKind[] = ["authority", "threat", "isolation", "demand", "bloc
  */
 export default function Home() {
   const { state, connected, transport, clients } = usePoll();
+
+  // the page is dark but <body> is not, so over-scroll would show a light band
+  useEffect(() => {
+    document.documentElement.style.background = "#0C1316";
+    document.body.style.background = "#0C1316";
+    return () => {
+      document.documentElement.style.background = "";
+      document.body.style.background = "";
+    };
+  }, []);
 
   if (!state) {
     return (
@@ -44,8 +55,8 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-3">
           <LiveBadge transport={transport} clients={clients} />
-          <Link href="/stage" className="mono text-xs underline" style={{ color: "var(--muted)" }}>
-            more screens
+          <Link href="/lab" className="rounded-md px-3 py-1.5 text-sm font-semibold" style={{ background: "var(--accent)", color: "#0c1316" }}>
+            Investigation console
           </Link>
         </div>
       </header>

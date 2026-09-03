@@ -9,3 +9,5 @@ next-env.d.ts
 ml/data/
 .trace-state.json
 .claude
+.ruff_cache
+tsconfig.tsbuildinfo
