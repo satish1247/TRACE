@@ -1,0 +1,60 @@
+rules_version = '2';
+
+// TRACE (trace-180) Firestore rules — matches SCHEMA.md's ownership table.
+// Hackathon demo: no auth system is built, so these are deliberately open
+// (readable/writable by anyone holding the public web API key) rather than
+// gated by Firebase Auth. That is a real, intentional simplification for a
+// judged demo, not an oversight — see SECURITY.md.
+//
+// Each collection is owned by exactly one module, matching SCHEMA.md:
+//   users        seeded once, everyone reads, nobody writes via the client
+//   calls        SHIELD writes (create + update — risk rises as a call proceeds)
+//   detections   SHIELD writes (create only — a detection is never edited)
+//   incidents    TRACK writes (create + update)
+//   accounts     TRACK writes (create + update)
+//   agentTasks   AGENT writes (create + update)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{uid} {
+      allow read: if true;
+      allow write: if false; // seeded manually by the team, not from the app
+    }
+
+    match /calls/{callId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if false;
+    }
+
+    match /detections/{detectionId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
+    match /incidents/{incidentId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if false;
+
+      match /hops/{hopId} {
+        allow read: if true;
+        allow create: if true;
+        allow update, delete: if false;
+      }
+    }
+
+    match /accounts/{vpaKey} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if false;
+    }
+
+    match /agentTasks/{taskId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if false;
+    }
+  }
+}
