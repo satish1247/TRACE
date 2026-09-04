@@ -16,3 +16,6 @@ shield-ml/*.pyc
 _extract1/
 _extract2/
 teammates/
+.claude
+.ruff_cache
+tsconfig.tsbuildinfo
