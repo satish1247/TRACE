@@ -1,0 +1,20 @@
+# SHIELD ML service — pretrained deepfake/clone detection (inference only)
+# CPU-only stack. Pin reasonable, mutually-compatible versions.
+
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+
+# --- ML stack (CPU build; do not require CUDA) ---
+# Installed from the PyTorch CPU wheel index (see README.md) so pip does not
+# pull the much larger CUDA build by default on Windows.
+torch==2.5.1
+transformers==4.47.1
+huggingface_hub==0.27.0
+safetensors==0.4.5
+
+# --- Media handling ---
+pillow==11.0.0
+soundfile==0.12.1
+librosa==0.10.2.post1
+numpy==1.26.4
