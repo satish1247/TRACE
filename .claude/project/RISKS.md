@@ -6,10 +6,10 @@
 > in place on a finished document blocks completion, and deleting it on an
 > empty document is how a project starts lying to itself.
 
-**Project:** TRACE
+**Project:** TRACE SHIELD
 **Owner:** orchestrator
 **Written during:** phase 1
-**Last updated:** 2026-09-03T14:13:29Z
+**Last updated:** 2026-09-03T20:25:50Z
 
 What could stop this working, how likely it is, and what is being done
 about it. Risks are reviewed at every gate, not written once.

@@ -1,47 +1,45 @@
 # Test plan
 
-## Automated
+<!-- pf:unwritten -->
+> Delete the line above once this document holds real content. Gates and the
+> final audit read that marker as "nobody has written this yet", so leaving it
+> in place on a finished document blocks completion, and deleting it on an
+> empty document is how a project starts lying to itself.
 
-`npm test` (Vitest) runs 12 files, 63 tests, in under 3 s. `npm run typecheck` runs TypeScript strict.
+**Project:** TRACE SHIELD
+**Owner:** testing-qa-agent
+**Written during:** phase 10
+**Last updated:** 2026-09-03T20:25:50Z
 
-| File | Covers |
-|---|---|
-| `screening.test.ts` | five script markers, risk monotonicity and cap, fingerprint stability |
-| `taxonomy.test.ts` | scam classification incl. digital arrest, fake customer care, courier, KYC; unknown path; determinism |
-| `coercion.test.ts` | tiers, bounded breakdown, threshold shift |
-| `hesitation.test.ts` | fluent vs hesitant typing index |
-| `taint.test.ts` | Proportional Freeze: ₹20 held / ₹1,99,990 free, ₹10 below floor, hold ≤ balance, purity |
-| `immunity.test.ts` | attestation lines, immune registry, campaign threshold |
-| `store.test.ts` | the five beats end to end, duress PIN, conference, veto, blocked payment, campaign, evidence pack incl. VASP hold, rehearsal, illegal transitions |
-| `scenario.test.ts` | verified-link shield |
-| `cardModel.test.ts` | model present with metrics; **TS scores equal Python probabilities within 1e-4 on 60 held-out samples**; fraud flagged / legit cleared; feature identities; explanations |
-| `extras.test.ts` | synthetic-media samples, lender checkpoint (store path), booking agent both branches (store path) |
-| `llm.test.ts` | enhancer returns null without a key in < 50 ms, null on failure, text on success |
-| `a11y.test.ts` | presence of large-text, focus rings, labels, text alongside colour |
+What will be tested, how, and what result counts as proof. Every test is
+recorded in state.json with `pf_state.py test`, and a test may only be marked
+PASSED with evidence attached.
 
-## Card-fraud model evaluation (held out, never used in training)
+## Strategy
 
-Dataset: PaySim synthetic mobile-money transactions (Kaggle paysim1, HF mirror). Total rows 6,362,620; working set 600,000 with all 8,213 fraud rows; train 480,000 (balanced to 32,850); test 120,000.
+What is covered by unit, integration, end-to-end, hardware bench
+and manual testing, and why that split fits this project.
 
-| Metric | Value |
-|---|---|
-| ROC-AUC | 1.0000 |
-| PR-AUC | 0.9993 |
-| Precision @ threshold 0.932 | 99.9% |
-| Recall | 99.6% |
-| F1 | 0.998 |
-| Confusion (tn / fp / fn / tp) | 118,356 / 1 / 7 / 1,636 |
+## Test matrix
 
-Caveat stated on stage: PaySim is synthetic and the balance-consistency features make it unusually separable; real card fraud is harder, and these numbers are an upper bound on what this pipeline would do on bank data.
+| Test | Type | Feature | Requirement | Evidence |
+|---|---|---|---|---|
 
-## Manual walkthrough (Chrome on the build laptop)
+## How to run
 
-Beats 1–6 from `/presenter` with `/phone`, `/guardian` and `/stage` open. Verified: known payee sails through; scripted call lights all five markers, risk 100, attestation line shown, conference ends the call; coached payment held, interview classifies digital arrest, guardian veto returns the phone; duress PIN shows the TRC receipt; trace reveals hop by hop with the ₹20 / ₹10 ledger; confirm publishes immunity and the campaign banner; blocked payment message; card tab streams scored transactions with TP/FP/FN/TN badges and the phone shows the held-card sheet.
+The exact command for each suite, and what a clean run prints.
 
-## Performance
+## Performance checks
 
-Measured on the build laptop with the dev server: `GET /api/state` is 5 KB at idle (about 40 ms) and stays under 60 KB with the trace tree and card feed loaded; four screens polling every 400 ms is well under 1% CPU. Scoring one card transaction walks 120 trees in under a millisecond. `next build` succeeds; the demo runs from `npm start`.
+The numbers that matter, how they are measured, and the
+threshold that fails the build.
 
-## Regressions
+## Regression suite
 
-None open. Every change re-ran the full suite; the one failure during the build (a wrong expected balance in `taint.test.ts`) was a test arithmetic error, corrected and documented.
+The set that runs after every change, listed explicitly. See
+references/regression.md.
+
+## Known gaps
+
+What is not tested and what risk that leaves open. An honest gap
+is worth more than a padded coverage number.

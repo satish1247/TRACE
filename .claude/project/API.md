@@ -1,65 +1,57 @@
 # Interface contract
 
-All routes are Next.js route handlers under `/api`. Bodies are JSON validated with zod. Every mutating request carries `x-vivek-role: phone | guardian | stage | presenter`.
+**Project:** TRACE SHIELD
+**Owner:** backend-agent
+**Written during:** phase 7
+**Last updated:** 2026-09-04
 
-## GET /api/stream
+## Conventions
 
-Server-Sent Events. Emits `event: state` with `{version, state, now, clients}` immediately on
-connect and again on every state change, plus `event: ping` every 15 s. This is the live path;
-every screen holds one open connection. No polling involved.
+Base path for the model service: `http://localhost:8000`. No auth (localhost
+only, hackathon demo). JSON responses, `multipart/form-data` requests for file
+upload. No versioning, no pagination. Timestamps elsewhere in the system are
+epoch milliseconds (matches `SCHEMA.md`).
 
-## GET /api/state
+## Endpoints (shield-ml FastAPI service)
 
-Returns `{ version: number, state: State }`. Never fails except when the server is down. Clients poll every 400 ms and re-render only when `version` changes.
+### POST /detect/face
+- Auth: none (localhost only)
+- Request: `multipart/form-data`, field `file`: image (jpeg/png, <=10MB)
+- Response 200: `{ "verdict": "real"|"fake", "confidence": number, "model": "prithivMLmods/Deep-Fake-Detector-v2-Model" }`
+- Errors: 400 (missing/invalid file), 415 (unsupported type), 500 (model load
+  failure) — the Next.js client treats any non-200 or timeout (>3s) as
+  "service unavailable," not a hard error, and does not fall back to the
+  acoustic method for face (no browser-side face fallback exists — S7 simply
+  shows "model service unavailable, retry").
 
-## POST /api/action
+### POST /detect/voice
+- Auth: none (localhost only)
+- Request: `multipart/form-data`, field `file`: audio (wav/mp3, <=15MB)
+- Response 200: `{ "verdict": "real"|"fake", "confidence": number, "model": "MelodyMachine/Deepfake-audio-detection-V2" }`
+- Errors: same as above. On unavailability/timeout, the client falls back to
+  `acoustic.ts` and labels the result "indicators, not a trained classifier."
 
-Body: `{ type: string, payload?: object }`. Response: `{ ok: true, version }` or `{ ok: false, error: string }` (HTTP 400 for validation, 403 for role, 409 for an illegal transition).
+## Firestore "API" (client SDK, no REST layer)
 
-| type | role | payload | effect |
-|---|---|---|---|
-| demo.reset | presenter | - | store := seed |
-| demo.beat | presenter | {beat: 0-5} | applies the beat's preconditions |
-| call.start | presenter | {scenario?: "digital_arrest" or "attested_bank"} | call.active, cursor 0 |
-| call.advance | stage or presenter | - | reveals next transcript line, scores it, updates markers, risk, fingerprint, attestation line |
-| call.stop | presenter or phone | - | call.active false, ended user_end |
-| call.liveLine | stage | {text} | scores a live mic line like a scripted one |
-| call.conference | phone | - | conferenced true; scripted caller disconnects; guardian shows joined |
-| device.remoteApp | presenter | {app: string or null} | sets remoteAccessApp |
-| device.appSwitch | phone | - | increments appSwitches |
-| pay.select | phone | {payeeId or {vpa, pasted}} | payment.stage composing |
-| pay.review | phone | {amount, signals} | immune check; score; tier; stage review / check / interview / stop |
-| pay.check | phone | {knownBefore: bool} | soft-check answer; continue or escalate |
-| pay.pin | phone | {pin} | 4471 -> success (if tier allows) ; 9999 -> verifying + hold + guardian alert + interview |
-| interview.answer | phone | {text} | classification; creates co-sign request; stage cosign |
-| cosign.decide | guardian | {id, decision: approve or veto} | stage success or vetoed |
-| trace.start | presenter | {amount} | builds tree, starts clock |
-| trace.advance | presenter or stage | - | reveals next hop; propagates taint; places holds |
-| incident.confirm | presenter | - | publishes immune entries and signature; builds evidence pack |
-| drill.start | presenter | - | rehearsal call |
-| drill.choose | phone | {choice: comply or hangup or ask} | lesson and threshold shift |
-| search.query | phone | {q} | verified-link shield event |
+SHIELD does not expose a custom backend API for `calls`/`detections` — the
+Next.js client writes to Firestore directly through `src/lib/shield/firestore.ts`,
+gated by Firestore security rules (see DATABASE.md, C1). This is a deliberate
+simplification for the demo: no server round-trip between "risk changed" and
+"teammate's screen updates."
 
-## POST /api/classify
+`firestore.ts` exposes (in-process, not HTTP):
+- `writeCall(callId: string, patch: Partial<Call>): Promise<void>`
+- `writeDetection(detection: Detection): Promise<string>` (returns new doc id)
+- `subscribeToCall(callId: string, onChange: (call: Call) => void): Unsubscribe`
 
-Body `{text}`. Returns `{scam, label, confidence, rebuttal, stat, source, markers}`. Pure; identical result offline.
+## Events and messages
 
-## POST /api/screen
+None beyond Firestore's own `onSnapshot` push mechanism — no queue, no
+webhook, no MQTT. TRACK and AGENT's screens are simply other `onSnapshot`
+subscribers on `calls`.
 
-Body `{text}`. Returns `{markers: MarkerHit[], riskDelta}`. Pure.
+## Backwards compatibility
 
-## GET /api/evidence
-
-Returns the evidence pack `{incidentId, victim, timeline[], holds[], immune[], ncrp, cfcfrms, str, simulated: true}` or 404 before confirmation.
-
-## Payment state machine
-
-idle -> composing -> review -> (allow) pin -> success
-                            -> (check) softcheck -> pin | interview
-                            -> (hold) interview -> cosign -> success | vetoed
-                            -> (stop) stopped
-review -> blocked (immune VPA)   pin(duress) -> verifying -> interview -> cosign ...
-
-## Coercion thresholds
-
-score 0-100. allow < 25 <= check < 50 <= hold < 80 <= stop. `thresholdShift` from rehearsal moves all three boundaries together (negative = earlier intervention).
+The FastAPI endpoints and the `calls`/`detections` shapes are frozen for the
+duration of the hackathon; any change is a conversation with the other two
+module owners first (per `SCHEMA.md`), not a unilateral edit.

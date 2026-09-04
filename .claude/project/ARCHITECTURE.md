@@ -1,82 +1,129 @@
-# Architecture
+# System architecture
 
-One Next.js process. Four browser screens share one in-memory state on the server and poll it. Pure, tested libraries do the thinking; screens only render state and send actions.
+**Project:** TRACE SHIELD
+**Owner:** system-architecture-agent
+**Written during:** phase 5
+**Last updated:** 2026-09-04
+
+## Context
+
+SHIELD is a Next.js route group (`/shield`, `/shield/media`) inside the shared
+`trace-180` repo. It runs entirely client-side except for one small server
+boundary (deepfake model inference, which cannot run in-browser). It talks to:
+
+- **Browser Web Speech API** — live transcription (no network, in-browser).
+- **Firebase Firestore** (`trace-180` project) — writes `calls`, `detections`;
+  reads `users`. Shared with TRACK and AGENT, who read what SHIELD writes.
+- **Local FastAPI service** (`localhost:8000`) — optional; wraps two pretrained
+  HF models (face deepfake ViT, voice deepfake wav2vec2). SHIELD's UI never
+  blocks on it: if it's unreachable, the browser-side acoustic fallback runs
+  instead.
 
 ```
-browser /phone      browser /guardian     browser /stage      browser /presenter
-    |  SSE: GET /api/stream, server pushes on every change (all four) |
-    |  POST /api/action {type, payload}  (role header)               |
-    v                                                                 v
-+---------------------------- Next.js route handlers ---------------------------+
-|  app/api/stream     -> Server-Sent Events; pushes state the instant it changes
-|  app/api/state      -> snapshot + version (fallback and health check)                                  |
-|  app/api/action     -> validates, checks role, runs reducer, appends event     |
-|  app/api/classify   -> pure classifier (also used by reducer)                  |
-|  app/api/screen     -> pure marker detector for live mic lines                 |
-|  app/api/evidence   -> renders the evidence pack from state                    |
-+-------------------------------------------------------------------------------+
-|  lib/store.ts     in-memory state + reducer (single writer, version counter)   |
-|  lib/scenario.ts  seeds: Lakshmi, payees, scripted call, tree seed             |
-|  lib/screening.ts five-marker detector, risk accumulator, fingerprint          |
-|  lib/taxonomy.ts  scam taxonomy + classifyNarrative(text)                      |
-|  lib/coercion.ts  scoreCoercion(signals, thresholdShift) -> score, tiers       |
-|  lib/taint.ts     buildTree, propagateTaint (haircut + hop cap + floor)        |
-|  lib/attestation.ts attested-call registry                                     |
-|  lib/immunity.ts  immune registry, reputation, campaign detection              |
-|  lib/llm.ts       optional wording enhancer behind OPENROUTER_API_KEY (3 s cap)  |
-|  lib/cardModel.ts walks XGBoost trees from src/data/card-model.json (no Python) |
-|  lib/media.ts, lenders.ts, agent.ts  simulated registries and the booking agent  |
-+-------------------------------------------------------------------------------+
-   client-only: lib/hesitation.ts (keystroke timing -> index; runs in the browser,
-   raw timings never leave the device)
+ browser (mic / typed input)
+        |
+        v
+  useTranscript() ---> markers.ts (score) ---> taxonomy.ts (name it)
+        |                    |                        |
+        v                    v                        v
+  /shield UI  <--------  risk state  ------->  interview.ts (verdict)
+        |
+        v
+  firestore.ts --writes--> Firestore: calls, detections
+                                    ^
+                                    | onSnapshot (read-only, other members' screens)
+                            TRACK's /dashboard, AGENT's /agent
+
+  /shield/media UI --upload--> POST localhost:8000/detect/{face,voice}
+        |                              |
+        | (unreachable/timeout)        v
+        +----------------------> acoustic.ts fallback (in-browser)
 ```
 
-## One request, end to end (Beat 3, the coerced payment)
+## Components
 
-1. `/phone` measures typing on the amount field (client). On Continue it builds `signals = {callActive, remoteApp, newPayee, pastedVpa, appSwitches, hesitationIndex}` and POSTs `action: pay.review`.
-2. Route handler validates the body (zod), checks the role header is `phone`, calls the reducer.
-3. Reducer calls `scoreCoercion(signals, user.thresholdShift)` -> `{score, breakdown, tier}`. Tier HOLD sets `payment.stage = "interview"`, appends event `payment.held`, bumps `version`.
-4. All four screens see the new version on their next poll. `/phone` renders the interview; `/stage` renders the Coercion tab; `/guardian` stays idle until the answer arrives.
-5. `/phone` POSTs `action: interview.answer {text}`. Reducer calls `classifyNarrative(text)` -> `{scam: "digital_arrest", confidence, rebuttal, stat}`; creates a co-sign request; stage `cosign`.
-6. `/guardian` POSTs `action: cosign.decide {id, decision: "veto"}` with role `guardian`. Reducer sets `payment.stage = "vetoed"`. `/phone` shows the result within one poll.
+- **`src/app/shield/page.tsx`** — the live-call screen: transcript, five
+  marker lamps, risk dial, verdict/interview card. Owns nothing but rendering
+  and wiring hooks together; must never call Firestore directly.
+- **`src/app/shield/media/page.tsx`** — upload screen for S6/S7.
+- **`src/lib/shield/markers.ts`** — pure function: transcript lines in, `{risk,
+  markers[]}` out. No I/O, no React. This is what C4 requires be unit-tested.
+- **`src/lib/shield/taxonomy.ts`** — pure function: transcript + markers in,
+  scam family + statistic out.
+- **`src/lib/shield/interview.ts`** — pure function: free-text answer in,
+  classification + rebuttal sentence out.
+- **`src/lib/shield/attestation.ts`** — pure lookup against a small hardcoded
+  "attested calls" registry (SIMULATED, labelled as such on screen).
+- **`src/lib/shield/acoustic.ts`** — in-browser feature extraction (Web Audio
+  API) for the offline fallback; pure given an `AudioBuffer`.
+- **`src/lib/shield/firestore.ts`** — the only file allowed to touch
+  Firestore. Exposes `writeCall`, `writeDetection`, `subscribeToCall`. Nothing
+  else in SHIELD imports `firebase/firestore` directly.
+- **`src/lib/shield/speech.ts`** — thin wrapper around
+  `webkitSpeechRecognition`/`SpeechRecognition`, with a typed-input fallback
+  path that produces the exact same transcript-line shape.
+- **`shield-ml/` (FastAPI)** — `/detect/face`, `/detect/voice`. Stateless,
+  local-only, never required for the demo to run.
 
-## One failure, end to end
+## Data flow
 
-The server process is killed mid-demo. Every screen's poll fails; each shows a "Reconnecting" banner and keeps polling. `npm run dev` restarts in a few seconds with an empty store; the presenter presses Reset then the current beat; the demo continues from that beat. Nothing is persisted on purpose: recovery is a restart plus one click, never a database repair.
+**Happy path (S1→S5):** user speaks → `speech.ts` emits a transcript line →
+`markers.ts` recomputes `{risk, markers}` (pure, synchronous) → UI re-renders
+lamps/dial instantly → `taxonomy.ts` recomputes the named family → once risk
+crosses 45, `interview.ts` prompts and classifies the answer → every state
+change also calls `firestore.ts#writeCall` (debounced ~300ms) → Firestore
+`calls/{callId}` updates → any other screen (TRACK's dashboard) with an
+`onSnapshot` listener on that document receives the update, typically
+<300ms on the same network.
 
-## Boundaries and rules
+**Failure path:** Web Speech unsupported/denied → `speech.ts` reports
+`unsupported`, UI switches to the always-present typed-input box, everything
+downstream is unaffected because it only ever sees "transcript lines," not
+"where they came from." Firestore write fails (offline, quota, bad rules) →
+`firestore.ts` catches, UI shows "not syncing — teammates won't see this call"
+without blocking local detection, and retries with backoff.
 
-- Single writer: only the reducer mutates state; route handlers never touch it directly.
-- Privacy: hesitation timings, mic audio and transcripts of the user's own speech are processed in the browser; only derived values (index, text answer) are posted. Documented in SECURITY.md and enforced by the API schema (there is no field for raw timings).
-- Determinism: every classifier is a pure function with tests; the LLM path only rewrites wording and is skipped when the key is absent or the call fails.
-- Simulation labelling: every state that stands in for a real rail (bank hold, NCRP filing, attestation, freeze) carries `simulated: true` and the UI renders the tag.
+## Key decisions
 
+1. **Two independent engines (script vs. media), not one.** Rejected: a single
+   "AI risk score." Reason: script markers are instant/explainable/offline and
+   catch the ~90% non-cloned scams; a deepfake check alone would sit there
+   detecting nothing on a real human scammer. Keeping them independent lets S1-S5
+   work with zero ML dependency.
+2. **Firestore write isolated to one file (`firestore.ts`).** Rejected:
+   calling Firestore from components. Reason: C1 ("never write to a collection
+   you do not own") is only enforceable if there is exactly one place writes
+   happen, so it can be code-reviewed and — later — matched to security rules.
+3. **Acoustic fallback is a first-class path, not an error state.** Rejected:
+   showing "model unavailable" and stopping. Reason: venue wifi may fail; S6/S7
+   must still return *something* measured, honestly labelled.
+4. **New `src/lib/shield/*` namespace, not the existing `src/lib/*.ts`.** The
+   repo's `main` branch already has `screening.ts`/`taxonomy.ts`/etc. for a
+   different, already-shipped unified app. SHIELD is being built as its own
+   module per the team's original per-member plan, so it does not modify or
+   depend on those files — new files, new routes, same repo/toolchain.
 
-## Card-fraud engine: train once, score everywhere
+## Cross-cutting concerns
 
-`ml/train_paysim.py` (Python, offline) downloads PaySim, engineers 14 features, balances the training split with RandomUnderSampler, trains `XGBClassifier`, evaluates on a held-out split and exports the trees, threshold, metrics and 60 parity samples to `src/data/card-model.json`. `src/lib/cardModel.ts` re-implements the feature engineering and walks the trees; `cardModel.test.ts` proves TypeScript probabilities match Python within 1e-4. The stage streams held-out samples through it; no Python runs at demo time.
+- **Auth:** none built by SHIELD. Reads the pre-seeded `users` collection by
+  uid; no login flow, no session management (out of scope, owned elsewhere).
+- **Authorization:** enforced by Firestore security rules restricting writes
+  to `calls`/`detections` per C1 — declared in `firestore.rules` (shared file,
+  additive only).
+- **Logging:** `console.error` only, on the Firestore-write and model-service
+  failure paths; nothing else logs, per no-console.log-in-prod convention for
+  anything not an actual error.
+- **Config/secrets:** Firebase web config lives in `NEXT_PUBLIC_FIREBASE_*` env
+  vars (public by design for Firebase web apps; access is controlled by
+  security rules, not by hiding the key). No server secrets in this module.
+- **Background work:** none. Everything is request/response or a live
+  `onSnapshot` subscription.
 
+## Scale and failure
 
-## Real-time transport
-
-Screens hold one open `GET /api/stream` connection (Server-Sent Events). The reducer calls
-`notify()` after every state change, so a payment held on the phone reaches the guardian's
-screen in milliseconds instead of on the next poll tick. A 15-second heartbeat keeps phone
-radios and proxies from closing an idle connection, and carries the live device count.
-
-If `EventSource` is unavailable or the stream drops, the client falls back to polling
-`/api/state` every 1.5 s and retries the stream every 2 s. Each screen shows the transport it
-is actually using (Live / Polling / Offline), so nobody has to take the claim on trust.
-
-## Durability
-
-`src/lib/persist.ts` saves the whole state after every change, debounced to 400 ms and always
-fire-and-forget so persistence can never slow down or break a payment. Two backends:
-
-- **Firestore** when `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL` and `FIREBASE_PRIVATE_KEY`
-  are set: survives restarts and machine changes, shared across devices.
-- **A JSON snapshot on disk** otherwise: survives restarts on the demo laptop, needs no account.
-
-On boot the store rehydrates once, non-blocking: it serves the seed immediately and swaps in the
-saved state the moment it arrives, then pushes it to every open stream. If both backends fail the
-app keeps running from memory, which is why the demo is safe with the venue's wifi down.
+This is a hackathon demo for one call at a time, not a production system.
+Explicitly handled: mic permission denied, Web Speech unsupported (non-Chrome),
+Firestore unreachable, model service unreachable/slow (>3s timeout → fallback),
+uploaded file too large/wrong type. Not handled and not needed: concurrent
+calls from the same browser tab, horizontal scaling, retention policy beyond
+the hackathon.

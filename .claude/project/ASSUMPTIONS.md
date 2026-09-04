@@ -6,10 +6,10 @@
 > in place on a finished document blocks completion, and deleting it on an
 > empty document is how a project starts lying to itself.
 
-**Project:** TRACE
+**Project:** TRACE SHIELD
 **Owner:** orchestrator
 **Written during:** phase 0
-**Last updated:** 2026-09-03T14:13:29Z
+**Last updated:** 2026-09-03T20:25:50Z
 
 Anything filled in on the user's behalf. Low-risk gaps are closed with a
 sensible default and recorded here; high-impact gaps are asked about instead.

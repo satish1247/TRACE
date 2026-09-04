@@ -1,34 +1,70 @@
-# TRACE handoff
+# Project handoff
 
-For someone who has never seen this conversation.
+<!-- pf:unwritten -->
+> Delete the line above once this document holds real content. Gates and the
+> final audit read that marker as "nobody has written this yet", so leaving it
+> in place on a finished document blocks completion, and deleting it on an
+> empty document is how a project starts lying to itself.
 
-## What it is
+**Project:** TRACE SHIELD
+**Owner:** documentation-agent
+**Written during:** phase 16
+**Last updated:** 2026-09-03T20:25:50Z
 
-A prototype for Innovation Unbound Round 2 (VIT Chennai), Problem Statement 1. It protects elderly and first-time digital users from social-engineering fraud by watching the person, not the payment: a live call, a screen-share app, hesitant typing, the words "don't tell anyone". It interviews instead of warning, names the scam, asks a guardian, traces stolen money in the golden hour, freezes only the tainted amount, and immunises the network. It also carries a card-fraud engine trained on PaySim and scored in the app runtime, a synthetic-media indicator, a loan-app checkpoint, a guided booking agent, and an optional LLM wording enhancer.
+Written for a person or model who has never seen this conversation. If a
+reader needs the chat history to understand any section, that section is not
+finished. This is the single most valuable document in the project.
 
-## Run
+## What this project is
 
-```bash
-npm install && npm run build && npm start
-```
+In plain language, with the problem it solves.
 
-Open http://localhost:3000. Presenter → Reset → Beat 1. PINs 4471 (real) and 9999 (duress). Details in README.md and DEPLOYMENT.md.
+## Who uses it and how
 
-## Where things are
+Roles, and the main journey for each.
 
-- `src/lib/` engines and the store: `screening`, `taxonomy`, `coercion`, `hesitation`, `taint`, `attestation`, `immunity`, `cardModel`, `media`, `lenders`, `agent`, `llm`, `store`, `scenario`
-- `src/app/` screens: `phone`, `guardian`, `stage`, `presenter`; API under `src/app/api`
-- `src/data/card-model.json` the exported XGBoost model; regenerate with `npm run train:card` (downloads about 490 MB once)
-- `.claude/project/` all design and verification documents; `.claude/state/` machine-checked status
+## How it is built
 
-## What is real, what is simulated
+Architecture summary, then where to find the detail.
 
-Real and unit-tested: every engine above, the state machine, the four screens. Simulated and labelled on screen: bank ledger and UPI rails, attestation, lender and immunity registries, freeze execution, NCRP/CFCFRMS/FIU-IND filings, the synthetic-media detector. The card model's numbers (99.6% recall, ROC-AUC 1.000) are real held-out results on synthetic PaySim data, which is easier than real bank data.
+## Technology
 
-## Decisions worth knowing
+Stack and versions, and why each was chosen.
 
-One runtime on stage; nothing depends on the network; Python trains offline and TypeScript scores. Firebase deliberately not used (laptop + hotspot). Requirements were signed off by delegation from the user; see ASSUMPTIONS.md.
+## Data
 
-## Open items
+Entities, storage, and the rules that must stay true.
 
-None blocking the demo. Roadmap: crypto tracing beyond the off-ramp note, a real attestation protocol with NPCI, threshold tuning from rehearsal data at scale.
+## Interfaces
+
+APIs, protocols, and integrations, with the contract location.
+
+## Business rules
+
+The non-obvious logic: pricing, eligibility, thresholds,
+calibration constants. These are the things a reader cannot infer from code.
+
+## Running it
+
+Setup from a clean machine, environment variables, how to run
+tests, how to deploy.
+
+## Current status
+
+Which features are COMPLETE, which are partial, and the exact
+phase the project stopped at.
+
+## Known issues and limitations
+
+Honest list. Include anything that works only
+under conditions a new reader would not guess.
+
+## Remaining work
+
+Prioritised, with the reason each item matters.
+
+## Where the state lives
+
+`.claude/project/` for narrative, `.claude/state/` for
+status, `state.json` as the machine-readable source of truth. Run
+`pf_state.py report` for a current summary.

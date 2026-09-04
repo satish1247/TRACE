@@ -1,37 +1,81 @@
-# Data model (in-memory store)
+# Data architecture
 
-There is no database process. `lib/store.ts` holds one `State` object; the reducer is the only writer; `version` increments on every change so clients can diff cheaply. Reset replaces the object with the scenario seed.
+**Project:** TRACE SHIELD
+**Owner:** database-agent
+**Written during:** phase 7
+**Last updated:** 2026-09-04
 
-## Entities
+Firestore, shared with TRACK and AGENT. Shapes below are **fixed by
+`SCHEMA.md`** (the team contract) — SHIELD does not change them unilaterally.
 
-| Entity | Fields | Notes |
-|---|---|---|
-| User | name, vpa, balance, pin, duressPin, thresholdShift, payees[] | pins are demo constants (4471 / 9999); thresholdShift is set by rehearsal |
-| Payee | id, name, vpa, known (bool) | known drives the newPayee signal |
-| Call | active, callerId, callerName, claimsAuthority, attested, attestationCode, transcript[], cursor, markers[], risk, ended, conferenced, fingerprint | transcript is the scripted scam; live lines are appended |
-| MarkerHit | kind (authority/threat/isolation/demand/blocking), lineIndex, phrase | one per detection |
-| Device | remoteAccessApp (string or null), appSwitches | set by presenter toggles |
-| Payment | stage, payee, amount, signals, score, breakdown[], tier, reason, receiptRef, interview {question, answer, classification}, decision | stage is a finite set (see API.md) |
-| CosignRequest | id, createdAt, amount, payee, score, markers[], answer, decision | shown on /guardian |
-| TraceNode | id, hop, label, vpa, kind (scammer/mule/merchant/individual), balanceBefore, received, taint, held, free, settlement (bool), parentId | produced by lib/taint.ts |
-| Hold | nodeId, amount, placedAt, simulated: true | sums to recovered |
-| ImmuneEntry | vpa, reportedAt, incidentId, simulated: true | checked before any payment starts |
-| ScriptSignature | fingerprint, scam, firstSeen, count | campaign detection reads count over a window |
-| Campaign | fingerprint, scam, count, windowMinutes, region, thresholdBoost | at most one active in the demo |
-| Reputation | number -> {reports, lastSeen, flagged} | caller reputation |
-| Event | ts, type, summary | observability log, capped at 200 |
-| Rehearsal | lastResult, lessons[] | |
+## Entities (SHIELD-owned collections)
 
-## Invariants and where they are enforced
+```ts
+// calls/{callId}
+{ startedAt: number;               // epoch ms
+  callerId: string; callerName: string;
+  transcript: { speaker: 'caller' | 'user'; text: string; at: number }[];
+  markers: ('authority'|'threat'|'isolation'|'demand'|'blocking')[];
+  risk: number;                    // 0..100, monotonically non-decreasing
+  scamType: string | null;         // e.g. 'digital_arrest'; null until named
+  active: boolean }
 
-- `payment.stage` transitions follow the state machine in API.md; enforced in the reducer (illegal transition -> action rejected with reason, no state change).
-- `held <= taint <= received` for every TraceNode; enforced in `propagateTaint` and asserted by tests.
-- `held == 0` when `taint < floor`; enforced in `propagateTaint` (the de-minimis rule).
-- `free == balanceBefore + received - held`; computed, never stored separately.
-- A payment to a VPA in `network.immune` never reaches stage `pin`; enforced at `pay.review`.
-- `version` strictly increases; enforced by the reducer wrapper.
-- Only role `guardian` may decide a co-sign; only role `presenter` may set beats, toggles and confirm incidents; enforced in the action handler before the reducer.
+// detections/{id}
+{ at: number;
+  kind: 'voice' | 'face' | 'transcript';
+  verdict: 'real' | 'fake' | 'uncertain';
+  confidence: number;              // 0..1
+  model: string;                   // e.g. 'MelodyMachine/Deepfake-audio-detection-V2' or 'acoustic-fallback'
+  evidence: Record<string, string | number>;
+  callId: string | null }
+```
+
+## Entities (read-only)
+
+```ts
+// users/{uid}   seeded once by the team, SHIELD only reads
+{ name: string; vpa: string; balance: number; guardianUid: string | null;
+  agentLimit: number; thresholdShift: number }
+```
+
+## Relationships
+
+`detections.callId` optionally references `calls/{callId}` (nullable — a
+standalone media upload on `/shield/media` has no active call). No cascade
+deletes are implemented; this is a hackathon demo with no delete flow.
+
+## Invariants
+
+- `risk` never decreases within one `calls` document's lifetime — enforced in
+  application code (`markers.ts` always folds new markers into the running
+  max), not by a Firestore rule (Firestore can't express monotonicity cheaply).
+- `markers` contains no duplicates — same enforcement point.
+- SHIELD never writes fields outside the shapes above, and never writes to
+  `incidents`, `accounts`, or `agentTasks` — enforced by (a) `firestore.ts`
+  being the only file that imports `firebase/firestore`, and (b) Firestore
+  security rules restricting the `calls`/`detections` collections to writes
+  matching this shape (`zod` schema validated client-side before every write,
+  mirrored in rules where Firestore's rule language allows).
+
+## Indexes and access patterns
+
+- `calls`: read/write by document id (the active call) — no query, no index
+  needed. TRACK's dashboard queries `calls` by `active == true` — that index
+  is TRACK's to declare (SHIELD doesn't need it).
+- `detections`: written by id, optionally queried by `callId` — a
+  single-field index, auto-created by Firestore.
 
 ## Migrations
 
-None. The seed is code (`lib/scenario.ts`); changing it is a code change with tests.
+No formal migration tooling for a hackathon demo. A shape change to
+`calls`/`detections` requires editing `SCHEMA.md` and notifying TRACK/AGENT's
+owners first (per the contract), then updating `src/lib/shield/firestore.ts`
+and the `zod` schema together in one commit.
+
+## Retention and privacy
+
+Transcript text and caller names are the only personal-ish data, and this is
+a simulated demo — no real callers, no real PII. Everything lives in the
+`trace-180` Firestore project only, is not exported, and a "Reset everything"
+action any teammate can trigger clears the demo data (implemented once,
+shared, not duplicated by SHIELD).

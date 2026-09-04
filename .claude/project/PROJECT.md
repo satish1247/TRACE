@@ -1,33 +1,58 @@
-# TRACE
+# Project overview
 
-**One line:** an app that protects elderly and first-time digital banking users from scam calls and coerced payments, traces stolen money inside the golden hour, freezes only the tainted amount, and immunises the whole network against the next attempt.
+**Project:** TRACE SHIELD
+**Owner:** orchestrator
+**Written during:** phase 0
+**Last updated:** 2026-09-04
 
-**Context:** Innovation Unbound Round 2, a 24-hour offline hackathon at VIT Chennai (3-4 Sept 2026). Problem Statement 1: protect vulnerable customers (senior citizens, first-time digital banking users, digitally inexperienced people) from scams, social engineering and fraudulent transactions.
+The one page a newcomer reads first.
 
-## What it is, in plain words
+## What this is
 
-Banks check whether a payment is correct. TRACE checks whether the person making it is free. When a scammer is on the phone telling a 68-year-old which button to press, every PIN is entered correctly, so the bank sees a perfect payment. TRACE looks for the criminal standing behind her instead: the live call, the screen-sharing app, the hesitant typing, the words "don't tell anyone". Then it does something the scammer could not have scripted: it asks her, in her own language, to say out loud who the money is for, and names the exact scam back to her.
+SHIELD is the "is this call a scam?" module of TRACE, a hackathon prototype that
+protects people (especially senior citizens and first-time digital users) from
+social-engineering fraud calls. While a call is happening, SHIELD transcribes it
+live, reads the script for five known scam markers, raises a 0-100 risk score in
+real time, names the exact scam family, and interviews the person instead of
+just showing a warning banner. It optionally checks uploaded audio/image for a
+cloned voice or face. It writes what it finds to Firestore so the other two
+TRACE modules (TRACK, which traces and freezes stolen money, and AGENT, an
+approval-gated payment assistant) can react to it live.
 
-If money has already gone, TRACE races the clock: it traces where it went, holds only the stolen amount (never an innocent shopkeeper's whole account), and hands the bank an evidence pack in minutes. Every incident then immunises everyone else on the network.
+## Project classes
 
-## Three pillars
+`software` (transcript UI, risk dial, verdict card), `service` (Firestore reads
+and writes shared with two other modules), `ml` (pretrained deepfake
+voice/face detection, served locally — no training).
 
-| Pillar | When | What |
-|---|---|---|
-| Protection | before money moves | call screening on the script, coercion scoring, the interview, graduated response, trusted circle, caller attestation, duress PIN, un-isolate |
-| Retrieval | after money moves | money-flow tree, golden-hour clock, Proportional Freeze, evidence pack |
-| Precaution | so it never repeats | network immunity, caller reputation, campaign detection, scam rehearsal, verified-link shield |
+## Who it is for
 
-## Five inventions (mechanisms that did not exist)
+Primary: the person on the call (potential scam victim), watching `/shield` on
+a laptop or phone. Secondary: the other two team members' modules (TRACK,
+AGENT), which read `calls` written by SHIELD. Tertiary: a hackathon judge,
+who will look for what is real vs simulated.
 
-1. **Caller Attestation** - nobody is the police unless the police told TRACE first. Unattested authority claims are fraud by definition.
-2. **Duress PIN** - a silent alarm inside the payment: a second PIN that shows a true "under verification" receipt, holds the funds and calls for help.
-3. **Un-isolate** - one tap conferences the guardian into the live scam call; scammers hang up when a third party joins.
-4. **Scam Rehearsal** - consented fire drills that tune each person's own thresholds.
-5. **Campaign detection** - epidemiology for scam scripts: an outbreak raises everyone's guard.
+## What success looks like
 
-## What this build is
+- Speaking a digital-arrest script out loud drives the risk meter past 45,
+  lights the five markers in the order they occur, and names the scam.
+- The interview step asks a real question, classifies a spoken/typed answer,
+  and names the scam back in one sentence.
+- A `calls` document written by SHIELD appears on a teammate's screen (via
+  `onSnapshot`) within one second, with no page refresh.
+- Uploading a sample voice or face clip returns a real/fake verdict with the
+  numbers that produced it, whether from the pretrained model service or the
+  offline acoustic fallback.
 
-A working prototype on simulated bank, NPCI, police and FIU rails, built backwards from a five-beat, three-minute stage demo. No real money, PINs or reports move. Every simulated rail is labelled as simulated on screen.
+## What is explicitly out of scope
 
-**People:** Lakshmi (68, Chennai, pays the kirana store and receives a pension by UPI); Priya, her daughter (the trusted circle); the presenter; the judges.
+- Training any model (pretrained weights only).
+- Writing to any Firestore collection other than `calls` and `detections`.
+- The `/pay`, `/dashboard`, `/agent` routes and the shared portal (`/`) — owned
+  by teammates.
+- Real telephony integration — the call is transcribed from mic/typed input in
+  the browser, not intercepted from an actual phone line.
+
+## Current status
+
+See `.claude/state/CURRENT-PHASE.md` and `pf_state.py report`.

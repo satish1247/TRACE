@@ -3,10 +3,10 @@
 <!-- pf:unwritten -->
 > Delete the line above once this document holds real content.
 
-**Project:** TRACE
+**Project:** TRACE SHIELD
 **Owner:** orchestrator
 **Written during:** any phase, whenever something is learned
-**Last updated:** 2026-09-03T14:13:29Z
+**Last updated:** 2026-09-03T20:25:50Z
 
 Failures that were caught, and what would have prevented them. A lesson is
 worth recording when the same mistake could plausibly happen on the next

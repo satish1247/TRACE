@@ -1,76 +1,51 @@
 # Setup
 
-From a clean machine to a running demo.
+<!-- pf:unwritten -->
+> Delete the line above once this document holds real content. Gates and the
+> final audit read that marker as "nobody has written this yet".
+
+**Project:** TRACE SHIELD
+**Owner:** devops
+**Written during:** phase 15
+**Last updated:** 2026-09-03T20:25:50Z
+
+Written for someone with a clean machine and no context. Every step is a command
+that can be copied, or a manual action stated as one. If a step cannot be
+automated, say so rather than leaving a gap the reader falls into.
 
 ## Prerequisites
 
-| Need | Version used | Check |
-|---|---|---|
-| Node.js | 22.20.0 | `node -v` |
-| npm | 10.9.3 | `npm -v` |
-| Chrome | any recent | needed only for the microphone moments |
-| Python (optional) | 3.12 | only to retrain the card model |
+Runtimes, tools and versions, with how to check each one is present.
 
-Nothing else. No database, no Docker, no cloud account, no API key.
+## Get the code
 
-## Run the app
+Clone or copy, and where the project expects to live.
 
-```bash
-npm install
-npm run build
-npm start
-```
+## Configure
 
-Open http://localhost:3000. It lists the four screens. Start at **Presenter**, press **Reset everything**, then **Beat 1**.
+Every environment variable and setting: name, purpose, example value, and
+whether it is a secret. Secrets are never written here, only named.
 
-`npm run dev` also works and hot-reloads, but `npm start` is steadier for a live demo.
+## Install
 
-## Demo constants
+The exact commands, in order, and what a successful run prints.
 
-| Thing | Value |
-|---|---|
-| Real UPI PIN | `4471` |
-| Duress (safety) PIN | `9999` |
-| Lakshmi's opening balance | ₹84,320 |
-| Agent spending limit | ₹2,000 |
+## Run it
 
-## Optional: warmer rebuttal wording
+How to start the system locally, the address it appears at, and how to know it
+is actually working rather than merely running.
 
-```bash
-cp .env.example .env
-# then set OPENROUTER_API_KEY=... in .env
-```
+## Run the tests
 
-The deterministic rebuttal always appears first; if the key is present and the network responds within 3 seconds, the wording is replaced with a warmer version. With no key, no network, or any error, nothing changes. Restart the server after editing `.env`.
+The command for each suite and what a clean run looks like.
 
-## Optional: retrain the card-fraud model
+## Hardware or device steps
 
-```bash
-pip install -r ml/requirements.txt
-npm run train:card
-```
+Flashing, wiring, calibration, and the safety precaution for each. Omit this
+section only when the project has no physical part.
 
-Downloads PaySim (about 490 MB) once to `ml/data/paysim.csv` from a public Hugging Face mirror, trains `XGBClassifier` on a balanced split, prints held-out metrics, and rewrites `src/data/card-model.json`. Takes about two minutes on a laptop. If the download is blocked, fetch the Kaggle file `PS_20174392719_1491204439457_log.csv` by hand and save it to that path; the script then skips the download.
+## When setup fails
 
-`npm test` fails if the exported model and the TypeScript scorer ever disagree, so run it after retraining.
-
-## Verify the install
-
-```bash
-npm test          # 12 files, 63 tests
-npm run typecheck # TypeScript strict, no output means clean
-```
-
-## Phones
-
-See `DEPLOYMENT.md` for the hotspot, laptop IP and Windows firewall steps.
-
-## Troubleshooting
-
-| Symptom | Fix |
-|---|---|
-| "Reconnecting to TRACE" banner | The server stopped. Restart it, then Presenter → Reset → your beat. |
-| Port 3000 busy | `npx kill-port 3000`, or change the port in `package.json`. |
-| Microphone button missing | Not Chrome, or the page is not on `localhost`/HTTPS. Use the typed answer; the demo does not depend on speech. |
-| Card tab empty | Press **Stream card transactions** on the presenter, or Beat 6. |
-| A screen looks stale after a code edit | The in-memory state re-seeds itself on a shape change; if in doubt press Reset. |
+The three failures most likely on a fresh machine and the fix for each. This
+section is written from what actually went wrong during the build, not
+imagined in advance.
