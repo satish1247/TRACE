@@ -8,3 +8,11 @@ next-env.d.ts
 .DS_Store
 ml/data/
 .trace-state.json
+shield-ml/.venv/
+shield-ml/__pycache__/
+shield-ml/*.pyc
+.vercel
+.env*
+_extract1/
+_extract2/
+teammates/
